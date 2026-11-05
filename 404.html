@@ -44,7 +44,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 -->
-<div id="summoners-rift-playground" data-version="2.2-scout-effects">
+<div id="summoners-rift-playground" data-version="2.3-mobile-visibility">
   <div class="rf-stage">
     <canvas id="rf-world" aria-label="可操控提莫的三维峡谷。点击地面移动，点击野怪或红方建筑攻击，右键拖动旋转，滚轮缩放。">三维峡谷、野怪和吹箭侦察兵。</canvas>
     <div class="rf-heading"><p>BANDLE SCOUT · ON DUTY</p><h2>召唤师峡谷</h2><span>提莫的峡谷冒险</span></div>
@@ -135,7 +135,7 @@ THE SOFTWARE.
 #summoners-rift-playground .rf-credit{display:block;margin-top:10px;font:11px/1.5 system-ui,sans-serif;color:#829c8c;}
 #summoners-rift-playground .rf-credit a{color:inherit;}
 @media(max-width:640px){
-  #summoners-rift-playground .rf-stage{height:620px;}
+  #summoners-rift-playground .rf-stage{height:clamp(390px,calc(100svh - 170px),620px);}
   #summoners-rift-playground .rf-heading{left:16px;top:20px;}
   #summoners-rift-playground .rf-heading h2{font-size:24px;letter-spacing:3px;}
   #summoners-rift-playground .rf-heading p{letter-spacing:1px;}
@@ -149,6 +149,14 @@ THE SOFTWARE.
   #summoners-rift-playground .rf-controls>span{flex-basis:100%;line-height:1.8;}
   #summoners-rift-playground #rf-target{top:118px;left:16px;right:auto;width:160px;padding:8px 10px;}
   #summoners-rift-playground #rf-toast{top:20px;right:12px;left:auto;transform:none;max-width:34%;font-size:11px;padding:5px 7px;}
+}
+@media(pointer:coarse) and (max-height:500px) and (max-width:1024px){
+  #summoners-rift-playground .rf-stage{height:clamp(260px,calc(100svh - 110px),390px);}
+  #summoners-rift-playground .rf-heading{top:14px;left:16px;}
+  #summoners-rift-playground .rf-heading p,#summoners-rift-playground .rf-heading>span{display:none;}
+  #summoners-rift-playground .rf-heading h2{font-size:22px;}
+  #summoners-rift-playground .rf-player-info{left:12px;bottom:12px;width:190px;padding:8px 10px;}
+  #summoners-rift-playground .rf-mini{right:12px;bottom:12px;width:88px;padding:4px;}
 }
 </style>
 <script>
@@ -703,9 +711,11 @@ const RiftWorld = (() => {
   const scene=new T.Scene();scene.background=new T.Color(0x0b1c27);scene.fog=new T.Fog(0x17333c,105,190);
   scene.add(new T.HemisphereLight(0xd0e6ec,0x385537,2.1));
   const sun=new T.DirectionalLight(0xffe2b2,2.8);sun.position.set(-28,55,22);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-42;sun.shadow.camera.right=42;sun.shadow.camera.top=42;sun.shadow.camera.bottom=-42;sun.shadow.camera.near=1;sun.shadow.camera.far=110;sun.shadow.bias=-.00035;sun.shadow.normalBias=.035;scene.add(sun);
-  const nav=RiftNavigation.create(),map=RiftWorld.build(T,scene,nav),camera=new T.PerspectiveCamera(43,1,.1,300),audio=RiftAudio.create(),fx=RiftEffects.create(T,scene);
+  const nav=RiftNavigation.create(),map=RiftWorld.build(T,scene,nav),camera=new T.PerspectiveCamera(43,1,.1,420),audio=RiftAudio.create(),fx=RiftEffects.create(T,scene);
   const spawn=nav.nearest(-24.5,24.5),game=RiftCombat.create(map.actors,spawn,nav,gameEvent),hero=game.hero;
-  const view={mode:'overview',yaw:.5,pitch:.94,distance:91,target:new T.Vector3(),desiredTarget:new T.Vector3(),desiredDistance:91,userZoom:false};
+  const compactViewport=()=>canvas.clientWidth<=640||(matchMedia('(pointer:coarse)').matches&&innerHeight<500&&innerWidth<=1024);
+  let compactLayout=compactViewport();
+  const view={mode:compactLayout?'follow':'overview',yaw:.5,pitch:.94,distance:91,target:new T.Vector3(),desiredTarget:new T.Vector3(),desiredDistance:91,userZoom:false};
   const clock=new T.Clock(),pointer=new T.Vector2(),ray=new T.Raycaster(),keys=new Set(),pointers=new Map();
   let width=736,height=620,frames=0,raf=0,lastMini=-1,disposed=false,active=false,laughUntil=0,nextLaugh=9,toastUntil=8,hoverId=null,selectedId=null;
   let markerVisible=false,arrivedAt=-100,dragging=false,pointerButton=0,lastX=0,lastY=0,motion=0,pinch=0;
@@ -722,9 +732,9 @@ const RiftWorld = (() => {
   function notify(message){$('announcement').textContent=message;}
   function toast(message,seconds=3){$('toast').textContent=message;toastUntil=game.time+seconds;notify(message);}
   function action(message){$('action').textContent=message;}
-  function save(){try{localStorage.setItem('teemo-rift-state-v2',JSON.stringify({privateContent:{scene:'rift-v2',camera:{yaw:view.yaw,pitch:view.pitch,distance:view.desiredDistance,mode:view.mode}}}));}catch(_){}}
+  function save(){try{localStorage.setItem('teemo-rift-state-v2',JSON.stringify({privateContent:{scene:'rift-v2',camera:{yaw:view.yaw,pitch:view.pitch,distance:view.desiredDistance,mode:view.mode,layout:compactViewport()?'compact':'wide'}}}));}catch(_){}}
   function loadSaved(){try{return JSON.parse(localStorage.getItem('teemo-rift-state-v2')||'null');}catch(_){return null;}}
-  function restore(saved){const state=saved?.privateContent;if(state?.scene!=='rift-v2')return;if(state.camera?.mode==='follow')view.mode='follow';if(Number.isFinite(state.camera?.yaw))view.yaw=state.camera.yaw;if(Number.isFinite(state.camera?.pitch))view.pitch=Math.max(.35,Math.min(1.35,state.camera.pitch));}
+  function restore(saved){const state=saved?.privateContent;if(state?.scene!=='rift-v2')return;if(state.camera?.mode==='follow')view.mode='follow';else if(state.camera?.mode==='overview'&&(!compactViewport()||state.camera.layout==='compact'))view.mode='overview';if(Number.isFinite(state.camera?.yaw))view.yaw=state.camera.yaw;if(Number.isFinite(state.camera?.pitch))view.pitch=Math.max(.35,Math.min(1.35,state.camera.pitch));}
   try{restore(loadSaved());}catch(_){}
   function gameEvent(e){
     if(e.type==='move'){marker.position.set(e.goal.x,.17,e.goal.z);marker.visible=markerVisible=true;arrivedAt=Infinity;selectedId=null;}
@@ -752,7 +762,7 @@ const RiftWorld = (() => {
   function moveTo(x,z){const ok=game.moveTo(x,z);if(!ok&&hero.alive)toast('这里走不过去，换个位置试试',2);pathLine();return ok;}
   function pathLine(){const points=[hero,...game.path];for(let i=0;i<Math.min(points.length,384);i++){routeBuffer[i*3]=points[i].x;routeBuffer[i*3+1]=.17;routeBuffer[i*3+2]=points[i].z;}routeGeometry.attributes.position.needsUpdate=true;routeGeometry.setDrawRange(0,game.path.length?Math.min(points.length,384):0);routeGeometry.computeBoundingSphere();}
   function mode(which,instant=false,persist=true){view.mode=which;view.userZoom=false;if(which==='overview'){view.yaw=.5;view.pitch=.94;view.desiredTarget.set(0,0,0);view.desiredDistance=fitDistance();}else{view.pitch=.73;view.desiredDistance=14;view.desiredTarget.set(hero.x,1,hero.z);}if(instant){view.target.copy(view.desiredTarget);view.distance=view.desiredDistance;}$('overview').setAttribute('aria-pressed',String(which==='overview'));$('follow').setAttribute('aria-pressed',String(which==='follow'));updateCamera(0,true);if(persist)save();}
-  function updateCamera(dt,instant=false){if(view.mode==='follow')view.desiredTarget.set(hero.x,1,hero.z);else view.desiredTarget.set(0,0,0);const t=instant?1:1-Math.exp(-dt*6);view.target.lerp(view.desiredTarget,t);view.distance+=(view.desiredDistance-view.distance)*t;const cp=Math.cos(view.pitch);camera.position.set(view.target.x+Math.sin(view.yaw)*cp*view.distance,view.target.y+Math.sin(view.pitch)*view.distance,view.target.z+Math.cos(view.yaw)*cp*view.distance);camera.lookAt(view.target);camera.updateMatrixWorld();}
+  function updateCamera(dt,instant=false){if(view.mode==='follow')view.desiredTarget.set(hero.x,1,hero.z);else view.desiredTarget.set(0,0,0);const t=instant?1:1-Math.exp(-dt*6);view.target.lerp(view.desiredTarget,t);view.distance+=(view.desiredDistance-view.distance)*t;const cp=Math.cos(view.pitch);camera.position.set(view.target.x+Math.sin(view.yaw)*cp*view.distance,view.target.y+Math.sin(view.pitch)*view.distance,view.target.z+Math.cos(view.yaw)*cp*view.distance);camera.lookAt(view.target);camera.updateMatrixWorld();scene.fog.near=Math.max(105,view.distance+90);scene.fog.far=scene.fog.near+90;}
   function fitDistance(){const test=new T.PerspectiveCamera(camera.fov,camera.aspect,.1,300);let distance=62;for(let step=0;step<35;step++){test.position.set(Math.sin(view.yaw)*Math.cos(view.pitch)*distance,Math.sin(view.pitch)*distance,Math.cos(view.yaw)*Math.cos(view.pitch)*distance);test.lookAt(0,0,0);test.updateMatrixWorld();let maxX=0,maxY=0;for(const x of [-30,30])for(const z of [-30,30])for(const y of [-4,4]){const v=new T.Vector3(x,y,z).project(test);maxX=Math.max(maxX,Math.abs(v.x));maxY=Math.max(maxY,Math.abs(v.y));}if(maxX<.94&&maxY<.97)break;distance*=1.05;}return Math.min(230,distance);}
   function laugh(manual=false){if(!hero.alive||game.victory)return false;if(manual)audio.unlock();laughUntil=game.time+2.3;nextLaugh=game.time+17+Math.random()*14;audio.play();if(manual)toast('嘿嘿嘿嘿……',1.5);return true;}
   function inputVector(){let x=0,z=0;const vx=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0),vz=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0);if(vx||vz){camera.getWorldDirection(direction);direction.y=0;direction.normalize();right.crossVectors(direction,up).normalize();x=direction.x*vz+right.x*vx;z=direction.z*vz+right.z*vx;}return {x,z};}
@@ -796,7 +806,7 @@ const RiftWorld = (() => {
   function draw(){updateCamera(0,true);labels();hud();renderer.render(scene,camera);minimap();frames++;}
   function update(dt){simulate(dt);updateCamera(dt);labels();hud();renderer.render(scene,camera);if(game.time-lastMini>.1){minimap();lastMini=game.time;}frames++;}
   function tick(){if(disposed||!root.isConnected)return;const dt=Math.min(clock.getDelta(),.05);if(!document.hidden)update(dt);raf=requestAnimationFrame(tick);}
-  function resize(){const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;width=rect.width;height=rect.height;renderer.setPixelRatio(Math.min(2,devicePixelRatio||1));renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();if(view.mode==='overview'&&!view.userZoom){view.desiredDistance=fitDistance();view.distance=view.desiredDistance;}updateCamera(0,true);draw();}
+  function resize(){const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;const wasCompact=compactLayout;compactLayout=compactViewport();width=rect.width;height=rect.height;renderer.setPixelRatio(Math.min(2,devicePixelRatio||1));renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();if(compactLayout&&!wasCompact&&view.mode==='overview'&&!view.userZoom)mode('follow',true,false);else if(view.mode==='overview'&&!view.userZoom){view.desiredDistance=fitDistance();view.distance=view.desiredDistance;}updateCamera(0,true);draw();}
   function setRay(clientX,clientY){const rect=canvas.getBoundingClientRect();pointer.set((clientX-rect.left)/rect.width*2-1,-(clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);}
   function pick(clientX,clientY){setRay(clientX,clientY);const hits=ray.intersectObjects(pickables,false);for(const hit of hits){const e=game.byId.get(hit.object.userData.entityId);if(e?.alive&&e.object.visible)return {entity:e};}const hit=ray.intersectObject(map.ground,false)[0];return hit?{x:hit.point.x,z:hit.point.z}:null;}
   function pairDistance(){const p=[...pointers.values()];return p.length>1?Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y):0;}
@@ -818,7 +828,7 @@ const RiftWorld = (() => {
   $('revive').addEventListener('click',()=>{if(game.victory)game.reset();else game.recall();draw();});
   const ro=new ResizeObserver(resize);ro.observe(canvas);document.addEventListener('visibilitychange',()=>{clock.getDelta();keys.clear();});
   const entityState=e=>({id:e.id,name:e.name,kind:e.kind,type:e.type,team:e.team,x:e.x,z:e.z,homeX:e.homeX,homeZ:e.homeZ,hp:e.hp,maxHp:e.maxHp,alive:e.alive,state:e.state,height:e.height,walking:e.walking,respawnAt:e.respawnAt,campId:e.campId,size:e.size,scale:e.scale,boss:e.boss});
-  root.rfGetState=()=>({version:2,release:root.dataset.version,hero:{...hero},path:game.path.map(p=>({...p})),targetId:game.targetId,recallRemaining:game.recallRemaining,victory:game.victory,entities:game.entities.map(entityState),projectiles:game.projectiles.map(p=>({id:p.id,kind:p.kind,targetId:p.targetId,started:p.started,duration:p.duration})),audio:audio.getState(),effects:fx.getState(),animation:{rootY:map.teemo.object.position.y,scale:map.teemo.object.scale.toArray(),headRoll:map.teemo.head.rotation.z,packTilt:map.teemo.pack.rotation.x,stepPhase:map.teemo.phase,leftLeg:map.teemo.leftLeg.rotation.x,rightLeg:map.teemo.rightLeg.rotation.x,bodyY:map.teemo.body.position.y,bodyZ:map.teemo.body.rotation.z,headY:map.teemo.head.rotation.y,weaponY:map.teemo.weapon.position.y,weaponZ:map.teemo.weapon.position.z,laughing:game.time<laughUntil,muzzle:map.teemo.muzzle.getWorldPosition(new T.Vector3()).toArray()},camera:{mode:view.mode,yaw:view.yaw,pitch:view.pitch,distance:view.distance,target:view.target.toArray()},frames,elapsed:game.time,trees:map.treeList.length,towers:map.towers.length,rocks:map.colliders.length,walkable:nav.walkable(hero.x,hero.z),renderer:renderer.info.render,geometry:renderer.info.memory.geometries});
+  root.rfGetState=()=>({version:2,release:root.dataset.version,hero:{...hero},path:game.path.map(p=>({...p})),targetId:game.targetId,recallRemaining:game.recallRemaining,victory:game.victory,entities:game.entities.map(entityState),projectiles:game.projectiles.map(p=>({id:p.id,kind:p.kind,targetId:p.targetId,started:p.started,duration:p.duration})),audio:audio.getState(),effects:fx.getState(),animation:{rootY:map.teemo.object.position.y,scale:map.teemo.object.scale.toArray(),headRoll:map.teemo.head.rotation.z,packTilt:map.teemo.pack.rotation.x,stepPhase:map.teemo.phase,leftLeg:map.teemo.leftLeg.rotation.x,rightLeg:map.teemo.rightLeg.rotation.x,bodyY:map.teemo.body.position.y,bodyZ:map.teemo.body.rotation.z,headY:map.teemo.head.rotation.y,weaponY:map.teemo.weapon.position.y,weaponZ:map.teemo.weapon.position.z,laughing:game.time<laughUntil,muzzle:map.teemo.muzzle.getWorldPosition(new T.Vector3()).toArray()},camera:{mode:view.mode,yaw:view.yaw,pitch:view.pitch,distance:view.distance,target:view.target.toArray(),far:camera.far,fog:{near:scene.fog.near,far:scene.fog.far}},viewport:{width,height,pixelRatio:renderer.getPixelRatio(),compact:compactLayout},frames,elapsed:game.time,trees:map.treeList.length,towers:map.towers.length,rocks:map.colliders.length,walkable:nav.walkable(hero.x,hero.z),renderer:renderer.info.render,geometry:renderer.info.memory.geometries});
   root.rfProjectWorld=(x,y,z)=>project(x,y,z);root.rfCommand=(x,z)=>moveTo(x,z);root.rfAttack=id=>game.attack(id);root.rfRecall=()=>game.recall();root.rfNav=nav;root.rfAdvance=seconds=>{for(let t=0;t<seconds;t+=1/60){const dt=Math.min(1/60,seconds-t);simulate(dt);updateCamera(dt);}draw();};
   root.rfSetPaused=paused=>{disposed=paused;if(paused)cancelAnimationFrame(raf);else{clock.getDelta();raf=requestAnimationFrame(tick);}};
   root.rfDispose=()=>{disposed=true;cancelAnimationFrame(raf);ro.disconnect();renderer.dispose();audio.dispose();fx.dispose();window.removeEventListener('pointermove',pointerMove);window.removeEventListener('pointerup',pointerEnd);};

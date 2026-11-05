@@ -4,7 +4,7 @@ Play: https://zuoxun.github.io/teemo-rift-explorer/
 
 A procedural 3D Summoner's Rift fan game. Click the ground to move and click jungle monsters or red buildings to attack with Teemo's blowgun. Enemy towers fight back. Return to the fountain with **B** to heal; fallen scouts respawn at the fountain. Right-drag to orbit, scroll to zoom, use WASD to walk, and press **4** to laugh. Sound can be toggled off.
 
-Includes animated neutral camps, destructible towers, inhibitors and Nexus, health, poison darts, monster leashing and respawns, recall interruption and fountain revival. Each of the two raptor (F6) camps has one large raptor and five small ones. Ordinary jungle monsters use compact health bars. No login is required.
+Includes animated neutral camps, destructible towers, inhibitors and Nexus, health, poison darts, monster leashing and respawns, recall interruption and fountain revival. Each of the two raptor (F6) camps has one large raptor and five small ones. Ordinary jungle monsters use compact health bars. No login is required. Small screens start with a close camera following Teemo; the full-map button remains available. Fog follows the camera distance so the terrain stays visible at every zoom level. The play area adapts to portrait and landscape screens.
 
 Turret bolts have bright red-orange cores and trails; Teemo's blowdarts have green-gold trails, muzzle flashes and hit effects. Recall shows rotating ground rings, a rising spiral, a light column, and departure/arrival flashes. Teemo runs with small hops, landing squash, bouncing ears and a swaying backpack.
 
