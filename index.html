@@ -420,7 +420,7 @@ const RiftAudio = (() => {
   ];
   function create(){
     const laughs=sources.map(source=>{const a=new Audio(source);a.preload='auto';a.volume=.52;return a;});
-    const music=new Audio('assets/sudden-top.m4a');music.id='rf-bgm-audio';music.hidden=true;music.preload='auto';music.autoplay=true;music.loop=true;music.volume=.25;
+    const music=new Audio('assets/sudden-top.m4a');music.id='rf-bgm-audio';music.hidden=true;music.preload='auto';music.loop=true;music.volume=.25;
     document.getElementById('summoners-rift-playground')?.appendChild(music);
     let enabled=true,musicEnabled=true,unlocked=false,context=null,played=0,error=null,lastVariant=-1,activeLaugh=null,bag=[],history=[],disposed=false,laughToken=0;
     let musicStatus='idle',musicError=null,musicPending=false,musicToken=0,musicLoops=0,previousMusicTime=0,autoplayAttempted=false,autoplayBlocked=false;
