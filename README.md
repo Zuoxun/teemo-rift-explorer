@@ -1,15 +1,15 @@
-# Teemo Rift Explorer
+# Teemo's Rift Adventure
 
-A playful, browser-based 3D fan model inspired by Summoner's Rift. Move Teemo through three lanes, the river, jungle paths, towers and bases.
+Play: https://zuoxun.github.io/teemo-rift-explorer/
 
-- Left-click the ground or minimap to walk. Pathfinding avoids obstacles.
-- Right-drag to rotate the camera; scroll to zoom.
-- Switch between the full map and a camera that follows Teemo.
-- WASD and arrow keys also move the character after clicking the scene.
-- Touch screens support tap-to-move, drag-to-rotate and pinch-to-zoom.
+A procedural 3D Summoner's Rift fan game. Click the ground to move and click jungle monsters or red buildings to attack with Teemo's blowgun. Enemy towers fight back. Return to the fountain with **B** to heal; fallen scouts respawn at the fountain. Right-drag to orbit, scroll to zoom, use WASD to walk, and press **4** to laugh. Sound can be toggled off.
 
-Open `index.html` in a modern browser with WebGL support. Everything runs on the visitor's device; no backend or external asset downloads are required. Saved position stays in that browser's local storage.
+Includes animated neutral camps, destructible towers, inhibitors and Nexus, health, poison darts, monster leashing and respawns, recall interruption and fountain revival. Everything needed to play is embedded in the page; no login is required.
 
-This is an unofficial fan project, not affiliated with or endorsed by Riot Games. League of Legends, Summoner's Rift and Teemo belong to Riot Games. The procedural models and map are simplified interpretations.
+## Attribution
 
-Three.js is distributed under the MIT license; see [THREE-LICENSE.txt](THREE-LICENSE.txt).
+Three.js is MIT licensed; see `THREE-LICENSE.txt`.
+
+This is an unofficial fan interpretation, not endorsed by Riot Games. League of Legends, Teemo, and the original Teemo laugh audio belong to Riot Games. Character and environment models are procedural artwork.
+
+The short original laugh, voiced by Tammy Nishimura, is **Teemo Original Laugh 2**, sourced from the [League of Legends Wiki audio catalogue](https://wiki.leagueoflegends.com/en-us/Teemo/Audio), [MP3 transcode](https://wiki.leagueoflegends.com/en-us/images/transcoded/Teemo_Original_Laugh_2.ogg/Teemo_Original_Laugh_2.ogg.mp3). Retrieved 2026-11-05. Combat sounds are generated locally.
