@@ -23,4 +23,6 @@ The game shuffles these clips in groups of three, avoiding immediate repeats. Co
 - Original song: 《突然的自我》 / 伍佰; adaptation, vocals and video: 蔚蓝边际; mixing: SpecialSound, as credited by the original uploader.
 - Retrieved: 2026-11-05, from the publicly playable AAC audio track without authentication.
 
-Music and composition belong to their respective creators and rights holders. The requested background track is served alongside the game so playback does not depend on expiring Bilibili media URLs. It starts after the first user interaction, loops at a base volume of 16%, and lowers further during Teemo's voice. The music button controls it independently; the sound button mutes all audio.
+Music and composition belong to their respective creators and rights holders. The requested background track is served alongside the game so playback does not depend on expiring Bilibili media URLs. It attempts audible autoplay on page load, loops at a base volume of 25%, and lowers further during Teemo's voice. The music button controls it independently; the sound button mutes all audio.
+
+Audible autoplay depends on the browser's site permissions. If the browser blocks it, the music button offers playback with one click.
